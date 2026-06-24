@@ -71,11 +71,36 @@ export function Pomodoro() {
   const getMinutes = () => Math.floor(timeLeft / 60).toString().padStart(2, '0');
   const getSeconds = () => (timeLeft % 60).toString().padStart(2, '0');
 
+  const playBeep = () => {
+    try {
+      const context = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+      
+      oscillator.type = 'bell';
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(880, context.currentTime); // A5 note
+      oscillator.frequency.exponentialRampToValueAtTime(440, context.currentTime + 0.5);
+      
+      gainNode.gain.setValueAtTime(0.3, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 0.5);
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+      
+      oscillator.start(context.currentTime);
+      oscillator.stop(context.currentTime + 0.5);
+    } catch (e) {
+      console.log("Audio not supported");
+    }
+  };
+
   useEffect(() => {
     let interval = null;
     if (isRunning && timeLeft > 0) {
       interval = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     } else if (isRunning && timeLeft === 0) {
+      playBeep();
       if (mode === 'focus') {
         setMode('break');
         setTimeLeft(BREAK_TIME);
