@@ -11,7 +11,7 @@ import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 export function Flashcards() {
   const { deckId } = useParams();
   const { decks, updateDeckMastery, updateCardSRS } = useDecks();
-  const { recordStudySession } = useUser();
+  const { stats, recordStudySession } = useUser();
   const navigate = useNavigate();
 
   const [dueCards, setDueCards] = useState([]);
