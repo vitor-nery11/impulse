@@ -74,22 +74,27 @@ export function Pomodoro() {
   const playBeep = () => {
     try {
       const context = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = context.createOscillator();
-      const gainNode = context.createGain();
       
-      oscillator.type = 'bell';
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(880, context.currentTime); // A5 note
-      oscillator.frequency.exponentialRampToValueAtTime(440, context.currentTime + 0.5);
+      // Criando um acorde de frequências para simular a ressonância de um sino real (Tigela Tibetana / Sino de Meditação)
+      const frequencies = [440, 880, 1320]; 
       
-      gainNode.gain.setValueAtTime(0.3, context.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 0.5);
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(context.destination);
-      
-      oscillator.start(context.currentTime);
-      oscillator.stop(context.currentTime + 0.5);
+      frequencies.forEach((freq, index) => {
+        const oscillator = context.createOscillator();
+        const gainNode = context.createGain();
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.value = freq;
+        
+        // Cada frequência diminui de volume diferente para imitar a vibração prolongada do sino
+        gainNode.gain.setValueAtTime(0.3 / (index + 1), context.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 2.5);
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(context.destination);
+        
+        oscillator.start(context.currentTime);
+        oscillator.stop(context.currentTime + 2.5);
+      });
     } catch (e) {
       console.log("Audio not supported");
     }
