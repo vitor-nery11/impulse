@@ -110,7 +110,19 @@ export function Flashcards() {
     });
 
     setTimeout(() => {
-      if (currentIndex < dueCards.length - 1) {
+      if (feedback === 'wrong') {
+        setDueCards(prev => [...prev, {
+          ...currentCard,
+          easeFactor,
+          interval,
+          repetition,
+          nextReviewDate
+        }]);
+      }
+
+      const newLength = feedback === 'wrong' ? dueCards.length + 1 : dueCards.length;
+
+      if (currentIndex < newLength - 1) {
         setCurrentIndex(currentIndex + 1);
       } else {
         const deck = decks.find(d => d.id === deckId);
