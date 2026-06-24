@@ -1,15 +1,15 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Layers, TrendingUp, Settings, UploadCloud, Timer } from 'lucide-react';
+import { LayoutDashboard, Layers, TrendingUp, Settings, UploadCloud, Timer, CheckSquare } from 'lucide-react';
 import { cn } from './Button';
 
 const bottomNavItems = [
   { name: 'Início', path: '/dashboard', icon: LayoutDashboard },
   { name: 'Decks', path: '/flashcards', icon: Layers },
+  { name: 'Tarefas', path: '/tasks', icon: CheckSquare },
   { name: 'Foco', path: '/pomodoro', icon: Timer },
   { name: 'Importar', path: '/import-pdf', icon: UploadCloud },
   { name: 'Evolução', path: '/progress', icon: TrendingUp },
-  { name: 'Ajustes', path: '/settings', icon: Settings },
 ];
 
 export function BottomNav() {

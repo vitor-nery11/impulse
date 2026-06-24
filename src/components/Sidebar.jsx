@@ -9,7 +9,8 @@ import {
   AudioLines,
   Flame,
   LogOut,
-  Timer
+  Timer,
+  CheckSquare
 } from 'lucide-react';
 import { cn } from './Button';
 import { useUser } from '../context/UserContext';
@@ -19,6 +20,7 @@ const navItems = [
   { name: 'Meus Decks', path: '/flashcards', icon: Layers },
   { name: 'Importar PDF', path: '/import-pdf', icon: UploadCloud },
   { name: 'Pomodoro', path: '/pomodoro', icon: Timer },
+  { name: 'Tarefas', path: '/tasks', icon: CheckSquare },
   { name: 'Evolução', path: '/progress', icon: TrendingUp },
 ];
 

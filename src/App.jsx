@@ -8,19 +8,24 @@ import { ImportPDF } from './pages/ImportPDF';
 import { Progress } from './pages/Progress';
 import { Settings } from './pages/Settings';
 import { Pomodoro } from './pages/Pomodoro';
+import { Tasks } from './pages/Tasks';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/flashcards" element={<DeckList />} />
-      <Route path="/flashcards/:deckId" element={<Flashcards />} />
-      <Route path="/import-pdf" element={<ImportPDF />} />
-      <Route path="/progress" element={<Progress />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/pomodoro" element={<Pomodoro />} />
+      
+      {/* Protected Routes */}
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/flashcards" element={<ProtectedRoute><DeckList /></ProtectedRoute>} />
+      <Route path="/flashcards/:deckId" element={<ProtectedRoute><Flashcards /></ProtectedRoute>} />
+      <Route path="/import-pdf" element={<ProtectedRoute><ImportPDF /></ProtectedRoute>} />
+      <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/pomodoro" element={<ProtectedRoute><Pomodoro /></ProtectedRoute>} />
+      <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
     </Routes>
   );
 }
