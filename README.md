@@ -1,16 +1,77 @@
-# React + Vite
+# Impulse (Flashcards & Foco)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+O Impulse é um sistema moderno de produtividade e aprendizado, desenvolvido para auxiliar estudantes na memorização de conteúdos e gestão de tempo. O aplicativo une o poder dos flashcards com Repetição Espaçada (SRS), temporizador Pomodoro e um gerenciador de tarefas integrado.
 
-Currently, two official plugins are available:
+O projeto foi criado para resolver a dificuldade de reter conhecimento a longo prazo. Ele permite organizar baralhos de estudo, importar conteúdos automaticamente a partir de PDFs, acompanhar o progresso diário (ofensivas) e gerenciar blocos de foco para combater a procrastinação.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+> 🤖 **Nota:** Este sistema foi totalmente arquitetado, codificado e otimizado através de Pair Programming com Inteligência Artificial (Google Gemini).
 
-## React Compiler
+## Funcionalidades
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Autenticação de usuários segura e criptografada (Supabase Auth).
+- Criação e gerenciamento de Baralhos (Decks) e Flashcards.
+- Importador de PDFs com leitura automática de palavras e termos.
+- Algoritmo de Repetição Espaçada (SRS) baseado no Anki (ajusta os dias de revisão baseado no seu desempenho).
+- Fila dinâmica de aprendizagem (cartões errados repetem no fim da sessão).
+- Temporizador Pomodoro com gerador sintético de sons (Sino de Meditação Tibetano via Web Audio API).
+- Gerenciador de Tarefas (To-Do List) interativo e persistente.
+- Painel de Estatísticas com contagem de Ofensiva (Streak) e tempo de estudo.
+- Interface Dark Mode Premium, responsiva para Desktop e Mobile.
 
-## Expanding the ESLint configuration
+## Tecnologias Utilizadas
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React (Vite)
+- Tailwind CSS
+- Supabase (PostgreSQL, Row Level Security, Auth)
+- React Router DOM
+- PDF.js
+- Web Audio API
+- Vercel (Hospedagem)
+
+## Como Usar (Rodando Localmente)
+
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/seu-usuario/impulse.git
+```
+
+### 2. Acesse a pasta do projeto
+
+```bash
+cd impulse
+```
+
+### 3. Instale as dependências
+
+```bash
+npm install
+```
+
+### 4. Configure as Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto com suas credenciais do Supabase:
+
+```env
+VITE_SUPABASE_URL=sua_url_aqui
+VITE_SUPABASE_ANON_KEY=sua_chave_anon_aqui
+```
+
+*Lembre-se de configurar suas tabelas e políticas de RLS no Supabase usando o SQL estrutural do projeto.*
+
+### 5. Execute o programa
+
+```bash
+npm run dev
+```
+
+### 6. Acesse no Navegador
+
+Abra `http://localhost:5173` para utilizar o sistema completo.
+
+## Vídeo do Projeto
+
+Em breve.
+
+---
+Desenvolvido com o objetivo de criar uma solução "World-Class" de aprendizado, mesclando engenharia de software moderna com Inteligência Artificial avançada em um fluxo ágil de desenvolvimento.
