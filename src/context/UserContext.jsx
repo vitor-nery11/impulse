@@ -14,7 +14,9 @@ export function UserProvider({ children }) {
     streakDays: 0,
     lastStudyDate: null,
     totalStudySeconds: 0,
-    dailyNewCards: 20
+    dailyNewCards: 20,
+    cardsStudiedToday: 0,
+    studyHistory: []
   });
 
   useEffect(() => {
@@ -25,7 +27,9 @@ export function UserProvider({ children }) {
         streakDays: 0,
         lastStudyDate: null,
         totalStudySeconds: 0,
-        dailyNewCards: 20
+        dailyNewCards: 20,
+        cardsStudiedToday: 0,
+        studyHistory: []
       });
     }
   }, [user]);
@@ -38,15 +42,26 @@ export function UserProvider({ children }) {
       .single();
     
     if (data) {
+      const today = new Date();
+      const todayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+      const isToday = data.last_study_date === todayStr;
+
       setStats({
         streakDays: data.streak_days || 0,
         lastStudyDate: data.last_study_date,
         totalStudySeconds: data.total_study_seconds || 0,
-        dailyNewCards: data.daily_new_cards || 20
+        dailyNewCards: data.daily_new_cards || 20,
+        cardsStudiedToday: isToday ? (data.cards_studied_today || 0) : 0,
+        studyHistory: data.study_history || []
       });
+
+      // Se virou o dia, reseta no banco
+      if (!isToday && user) {
+        supabase.from('user_stats').update({ cards_studied_today: 0 }).eq('user_id', user.id).then();
+      }
     } else if (error && error.code === 'PGRST116') {
       await supabase.from('user_stats').insert([{ user_id: user.id, daily_new_cards: 20 }]);
-      setStats({ streakDays: 0, lastStudyDate: null, totalStudySeconds: 0, dailyNewCards: 20 });
+      setStats({ streakDays: 0, lastStudyDate: null, totalStudySeconds: 0, dailyNewCards: 20, cardsStudiedToday: 0, studyHistory: [] });
     }
   };
 
@@ -57,69 +72,88 @@ export function UserProvider({ children }) {
     }
   };
 
-  const recordStudySession = async (secondsSpent) => {
+  const incrementDailyCard = async () => {
+    if (!user) return;
+    
     setStats(prev => {
       const today = new Date();
       const todayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
       
+      const newCount = prev.cardsStudiedToday + 1;
       let newStreak = prev.streakDays;
-      let newLastStudyDate = prev.lastStudyDate;
+      let newHistory = [...prev.studyHistory];
 
-      if (!prev.lastStudyDate) {
-        newStreak = 1;
-        newLastStudyDate = todayStr;
-      } else if (prev.lastStudyDate !== todayStr) {
-        const lastDate = new Date(prev.lastStudyDate);
-        const currentDate = new Date(todayStr);
-        const diffTime = Math.abs(currentDate - lastDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-
-        if (diffDays === 1) {
-          newStreak += 1;
-        } else if (diffDays > 1) {
+      // Atingiu a meta exata de hoje
+      if (newCount === prev.dailyNewCards) {
+        if (!prev.lastStudyDate) {
           newStreak = 1;
+        } else if (prev.lastStudyDate !== todayStr) {
+          const lastDate = new Date(prev.lastStudyDate);
+          const currentDate = new Date(todayStr);
+          const diffDays = Math.ceil(Math.abs(currentDate - lastDate) / (1000 * 60 * 60 * 24)); 
+          
+          if (diffDays === 1) newStreak += 1;
+          else if (diffDays > 1) newStreak = 1;
         }
         
-        newLastStudyDate = todayStr;
+        if (!newHistory.includes(todayStr)) {
+          newHistory.push(todayStr);
+        }
+        
+        supabase.from('user_stats').update({
+          cards_studied_today: newCount,
+          streak_days: newStreak,
+          last_study_date: todayStr,
+          study_history: newHistory
+        }).eq('user_id', user.id).then();
+        
+        return {
+          ...prev,
+          cardsStudiedToday: newCount,
+          streakDays: newStreak,
+          lastStudyDate: todayStr,
+          studyHistory: newHistory
+        };
       }
 
+      // Apenas incrementa contador
+      supabase.from('user_stats').update({ cards_studied_today: newCount }).eq('user_id', user.id).then();
+      
+      return {
+        ...prev,
+        cardsStudiedToday: newCount
+      };
+    });
+  };
+
+  const recordStudySession = async (secondsSpent) => {
+    setStats(prev => {
       const newStats = {
         ...prev,
-        streakDays: newStreak,
-        lastStudyDate: newLastStudyDate,
         totalStudySeconds: prev.totalStudySeconds + secondsSpent
       };
 
       if (user) {
         supabase.from('user_stats')
-          .update({
-            streak_days: newStreak,
-            last_study_date: newLastStudyDate,
-            total_study_seconds: prev.totalStudySeconds + secondsSpent
-          })
+          .update({ total_study_seconds: prev.totalStudySeconds + secondsSpent })
           .eq('user_id', user.id)
           .then();
       }
-
       return newStats;
     });
   };
 
   const getFormattedStudyTime = () => {
-    if (stats.totalStudySeconds < 60) {
-      return `${stats.totalStudySeconds}s`;
-    }
+    if (stats.totalStudySeconds < 60) return `${stats.totalStudySeconds}s`;
     const totalMinutes = Math.floor(stats.totalStudySeconds / 60);
-    if (totalMinutes < 60) {
-      return `${totalMinutes}m`;
-    }
+    if (totalMinutes < 60) return `${totalMinutes}m`;
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
   };
 
   return (
-    <UserContext.Provider value={{ stats, recordStudySession, getFormattedStudyTime, updateStudyMode }}>
+    <UserContext.Provider value={{ stats, recordStudySession, getFormattedStudyTime, updateStudyMode, incrementDailyCard }}>
       {children}
     </UserContext.Provider>
   );

@@ -11,7 +11,7 @@ import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 export function Flashcards() {
   const { deckId } = useParams();
   const { decks, updateDeckMastery, updateCardSRS } = useDecks();
-  const { stats, recordStudySession } = useUser();
+  const { stats, recordStudySession, incrementDailyCard } = useUser();
   const navigate = useNavigate();
 
   const [dueCards, setDueCards] = useState([]);
@@ -66,6 +66,7 @@ export function Flashcards() {
 
   const handleNext = (feedback) => {
     setIsFlipped(false);
+    incrementDailyCard();
     
     if (feedback === 'correct') {
       setCorrectCount(prev => prev + 1);

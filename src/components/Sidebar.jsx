@@ -78,15 +78,36 @@ export function Sidebar() {
       </nav>
 
       <div className="mt-auto p-4 space-y-4">
-        <div className="p-4 bg-[#1c1c1e] rounded-2xl border border-white/5">
-          <div className="flex items-center justify-between mb-2">
+        
+        {/* Marcador de Meta Diária e Ofensiva */}
+        <div className="p-4 bg-[#1c1c1e] rounded-2xl border border-white/5 space-y-3">
+          
+          <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-[#ccc]">Ofensiva</span>
             <div className="flex items-center text-white">
-              <Flame size={16} className="mr-1 fill-current" />
+              <Flame size={16} className={`mr-1 ${stats.cardsStudiedToday >= stats.dailyNewCards ? 'fill-orange-500 text-orange-500' : 'fill-current'}`} />
               <span className="font-bold">{stats.streakDays}</span>
             </div>
           </div>
-          <p className="text-xs text-[#777]">Estude hoje para manter sua ofensiva!</p>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[#888] font-medium">Meta Diária</span>
+              <span className="text-[#f5f5f5] font-bold">{stats.cardsStudiedToday} / {stats.dailyNewCards}</span>
+            </div>
+            <div className="w-full bg-black/40 rounded-full h-1.5 overflow-hidden">
+              <div 
+                className="bg-orange-500 h-full rounded-full transition-all duration-500"
+                style={{ width: `${Math.min((stats.cardsStudiedToday / stats.dailyNewCards) * 100, 100)}%` }}
+              ></div>
+            </div>
+          </div>
+          
+          <p className="text-[10px] text-[#777] text-center leading-tight">
+            {stats.cardsStudiedToday >= stats.dailyNewCards 
+              ? "Meta alcançada hoje! 🔥" 
+              : "Complete a meta para manter a ofensiva!"}
+          </p>
         </div>
 
         <Link 

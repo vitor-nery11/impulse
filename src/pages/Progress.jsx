@@ -56,18 +56,26 @@ export function Progress() {
                 <CalendarDays size={24} />
               </div>
               <h3 className="text-2xl sm:text-3xl font-extrabold text-black mb-1">{stats.streakDays} Dias Seguidos</h3>
-              <p className="text-[#555] text-sm font-medium mb-6 max-w-[250px] mx-auto leading-tight">Você está on fire! Estude todos os dias para manter a ofensiva.</p>
+              <p className="text-[#555] text-sm font-medium mb-6 max-w-[250px] mx-auto leading-tight">Você está on fire! Cumpra sua meta todos os dias para manter a ofensiva.</p>
               
               <div className="flex justify-center gap-1.5 sm:gap-2">
                 {[...Array(7)].map((_, i) => {
-                  const isAchieved = i < Math.min(stats.streakDays, 7);
+                  const curr = new Date();
+                  const first = curr.getDate() - curr.getDay();
+                  const d = new Date(curr);
+                  d.setDate(first + i);
+                  const dateStr = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                  
+                  const isAchieved = stats.studyHistory && stats.studyHistory.includes(dateStr);
+
                   return (
                     <div 
                       key={i} 
                       className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-xs font-bold transition-transform hover:scale-105 border
                         ${isAchieved 
-                          ? 'bg-black text-white border-transparent shadow-sm' 
+                          ? 'bg-orange-500 text-white border-transparent shadow-sm' 
                           : 'bg-white text-[#888] border-black/10'}`}
+                      title={dateStr}
                     >
                       {['D','S','T','Q','Q','S','S'][i]}
                     </div>
