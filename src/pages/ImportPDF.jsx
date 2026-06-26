@@ -10,8 +10,10 @@ export function ImportPDF() {
   const [status, setStatus] = useState('idle'); // idle, processing, editing
   const [extractedWords, setExtractedWords] = useState([]);
   const [deckName, setDeckName] = useState('');
+  const [importMode, setImportMode] = useState('new');
+  const [selectedDeckId, setSelectedDeckId] = useState('');
   
-  const { addDeck } = useDecks();
+  const { decks, addDeck, addCardsToDeck } = useDecks();
   const navigate = useNavigate();
 
   const handleFileUpload = async (e) => {
@@ -51,23 +53,34 @@ export function ImportPDF() {
     const selectedCards = extractedWords.filter(w => w.selected);
     
     if (selectedCards.length === 0) {
-      alert("Selecione pelo menos uma palavra para salvar no Deck.");
+      alert("Selecione pelo menos uma palavra para salvar.");
       return;
     }
 
-    const newDeck = {
-      name: deckName || 'Novo Baralho',
-      cards: selectedCards.map(c => ({
-        id: Date.now() + Math.random(), // Vai ser sobrescrito pelo ID real do banco
-        word: c.word,
-        translation: c.translation || '[Sem tradução]',
-        category: 'PDF',
-        level: 'Misto'
-      }))
-    };
+    if (importMode === 'existing' && !selectedDeckId) {
+      alert("Por favor, selecione um deck existente para adicionar as cartas.");
+      return;
+    }
+
+    const newCards = selectedCards.map(c => ({
+      word: c.word,
+      translation: c.translation || '[Sem tradução]',
+      category: 'PDF',
+      level: 'Misto'
+    }));
 
     setStatus('processing'); // Feedback visual durante o salvamento
-    await addDeck(newDeck);
+
+    if (importMode === 'new') {
+      const newDeck = {
+        name: deckName || 'Novo Baralho',
+        cards: newCards
+      };
+      await addDeck(newDeck);
+    } else {
+      await addCardsToDeck(selectedDeckId, newCards);
+    }
+
     setStatus('idle');
     navigate('/dashboard');
   };
@@ -131,13 +144,37 @@ export function ImportPDF() {
                 </div>
               </div>
 
-              <input 
-                type="text" 
-                placeholder="Nome do Novo Deck"
-                value={deckName}
-                onChange={(e) => setDeckName(e.target.value)}
-                className="border border-[#333] bg-[#0a0a0a] text-[#f5f5f5] rounded-xl px-4 py-2 focus:ring-1 focus:ring-white/20 focus:border-white/30 outline-none w-full md:w-80 font-medium"
-              />
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <select 
+                  value={importMode} 
+                  onChange={(e) => setImportMode(e.target.value)}
+                  className="bg-[#1e1e1e] text-[#f5f5f5] border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:ring-1 focus:ring-white/20 font-medium h-10"
+                >
+                  <option value="new">Criar Novo Deck</option>
+                  <option value="existing">Adicionar a um Deck</option>
+                </select>
+
+                {importMode === 'new' ? (
+                  <input 
+                    type="text" 
+                    placeholder="Nome do Novo Deck"
+                    value={deckName}
+                    onChange={(e) => setDeckName(e.target.value)}
+                    className="border border-[#333] bg-[#0a0a0a] text-[#f5f5f5] rounded-xl px-4 py-2 focus:ring-1 focus:ring-white/20 focus:border-white/30 outline-none w-full sm:w-64 font-medium h-10"
+                  />
+                ) : (
+                  <select 
+                    value={selectedDeckId} 
+                    onChange={(e) => setSelectedDeckId(e.target.value)}
+                    className="border border-[#333] bg-[#0a0a0a] text-[#f5f5f5] rounded-xl px-4 py-2 focus:ring-1 focus:ring-white/20 focus:border-white/30 outline-none w-full sm:w-64 font-medium h-10"
+                  >
+                    <option value="" disabled>Selecione um Deck</option>
+                    {decks.map(d => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
 
             <div className="border border-white/5 rounded-2xl overflow-hidden mb-8">

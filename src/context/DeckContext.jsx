@@ -161,8 +161,48 @@ export function DeckProvider({ children }) {
     await supabase.from('cards').update(dbSrsData).eq('id', cardId);
   };
 
+  const addCardsToDeck = async (deckId, newCards) => {
+    if (!user) return;
+    
+    const cardsToInsert = newCards.map(c => ({
+      deck_id: deckId,
+      word: c.word,
+      translation: c.translation,
+      level: c.level || 'Iniciante',
+      category: c.category || 'Geral'
+    }));
+    
+    const { data: newCardsData } = await supabase
+      .from('cards')
+      .insert(cardsToInsert)
+      .select();
+      
+    if (newCardsData) {
+      setDecks(prev => prev.map(deck => {
+        if (deck.id === deckId) {
+          return {
+            ...deck,
+            cards: [...deck.cards, ...newCardsData.map(c => ({
+              id: c.id,
+              deck_id: c.deck_id,
+              word: c.word,
+              translation: c.translation,
+              level: c.level,
+              category: c.category,
+              easeFactor: c.ease_factor,
+              interval: c.interval,
+              repetition: c.repetition,
+              nextReviewDate: c.next_review_date
+            }))]
+          };
+        }
+        return deck;
+      }));
+    }
+  };
+
   return (
-    <DeckContext.Provider value={{ decks, addDeck, deleteDeck, updateDeckMastery, renameDeck, updateCardSRS }}>
+    <DeckContext.Provider value={{ decks, addDeck, deleteDeck, updateDeckMastery, renameDeck, updateCardSRS, addCardsToDeck }}>
       {children}
     </DeckContext.Provider>
   );
