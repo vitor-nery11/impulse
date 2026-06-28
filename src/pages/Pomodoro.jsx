@@ -66,8 +66,8 @@ const TaskCompleteModal = ({ taskTitle, onComplete, onSkip }) => (
       <p className="text-[#888] mb-6">Você finalizou a tarefa: <br/><strong className="text-white mt-1 block">{taskTitle}</strong></p>
       
       <div className="flex flex-col gap-3">
-        <button onClick={onComplete} className="w-full py-3 rounded-lg bg-emerald-500 text-black font-bold hover:bg-emerald-400 transition-colors shadow-lg">Sim, finalizei!</button>
-        <button onClick={onSkip} className="w-full py-3 rounded-lg bg-white/5 text-white hover:bg-white/10 transition-colors font-medium">Ainda não</button>
+        <button onClick={onComplete} className="w-full py-3 rounded-lg bg-emerald-500 text-black font-bold hover:bg-emerald-400 transition-colors shadow-lg">Sim, finalizei a tarefa!</button>
+        <button onClick={onSkip} className="w-full py-3 rounded-lg bg-white/5 text-white hover:bg-white/10 transition-colors font-medium">Não, continuar ciclos de estudo</button>
       </div>
     </div>
   </div>
