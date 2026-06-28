@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutDashboard } from '../components/LayoutDashboard';
-import { Play, Pause, RotateCcw, Coffee, Brain, Settings } from 'lucide-react';
+import { Play, Pause, RotateCcw, Coffee, Brain, Settings, CheckCircle2 } from 'lucide-react';
+import { useTasks } from '../context/TasksContext';
 
 const FlipPanel = ({ value }) => (
   <div className="relative bg-[#1c1c1e] rounded-2xl flex items-center justify-center px-4 py-8 shadow-2xl min-w-[140px] sm:min-w-[220px] overflow-hidden border border-white/5">
@@ -55,6 +56,23 @@ const SettingsModal = ({ focusTime, breakTime, onSave, onClose }) => {
   );
 };
 
+const TaskCompleteModal = ({ taskTitle, onComplete, onSkip }) => (
+  <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-[3rem]">
+    <div className="bg-[#1a1a1a] border border-white/10 p-6 rounded-2xl w-full max-w-sm shadow-2xl animate-in fade-in zoom-in-95 text-center">
+      <div className="w-16 h-16 bg-emerald-900/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
+        <CheckCircle2 size={32} />
+      </div>
+      <h3 className="text-xl font-bold text-white mb-2">Ciclo Concluído!</h3>
+      <p className="text-[#888] mb-6">Você finalizou a tarefa: <br/><strong className="text-white mt-1 block">{taskTitle}</strong></p>
+      
+      <div className="flex flex-col gap-3">
+        <button onClick={onComplete} className="w-full py-3 rounded-lg bg-emerald-500 text-black font-bold hover:bg-emerald-400 transition-colors shadow-lg">Sim, finalizei!</button>
+        <button onClick={onSkip} className="w-full py-3 rounded-lg bg-white/5 text-white hover:bg-white/10 transition-colors font-medium">Ainda não</button>
+      </div>
+    </div>
+  </div>
+);
+
 export function Pomodoro() {
   const [focusConfig, setFocusConfig] = useState(25);
   const [breakConfig, setBreakConfig] = useState(5);
@@ -64,6 +82,11 @@ export function Pomodoro() {
   const [mode, setMode] = useState('focus');
   const [cycles, setCycles] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  
+  const { tasks, toggleTask } = useTasks();
+  const pendingTasks = tasks.filter(t => !t.completed);
+  const [selectedTaskId, setSelectedTaskId] = useState('');
+  const [showTaskCompleteModal, setShowTaskCompleteModal] = useState(false);
 
   const FOCUS_TIME = focusConfig * 60;
   const BREAK_TIME = breakConfig * 60;
@@ -74,8 +97,6 @@ export function Pomodoro() {
   const playBeep = () => {
     try {
       const context = new (window.AudioContext || window.webkitAudioContext)();
-      
-      // Criando um acorde de frequências para simular a ressonância de um sino real (Tigela Tibetana / Sino de Meditação)
       const frequencies = [440, 880, 1320]; 
       
       frequencies.forEach((freq, index) => {
@@ -84,8 +105,6 @@ export function Pomodoro() {
         
         oscillator.type = 'sine';
         oscillator.frequency.value = freq;
-        
-        // Cada frequência diminui de volume diferente para imitar a vibração prolongada do sino
         gainNode.gain.setValueAtTime(0.3 / (index + 1), context.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 2.5);
         
@@ -110,6 +129,7 @@ export function Pomodoro() {
         setMode('break');
         setTimeLeft(BREAK_TIME);
         setCycles(c => c + 1);
+        if (selectedTaskId) setShowTaskCompleteModal(true);
       } else {
         setMode('focus');
         setTimeLeft(FOCUS_TIME);
@@ -117,7 +137,7 @@ export function Pomodoro() {
       setIsRunning(false);
     }
     return () => clearInterval(interval);
-  }, [isRunning, timeLeft, mode, FOCUS_TIME, BREAK_TIME]);
+  }, [isRunning, timeLeft, mode, FOCUS_TIME, BREAK_TIME, selectedTaskId]);
 
   const toggleTimer = () => setIsRunning(!isRunning);
   
@@ -165,9 +185,37 @@ export function Pomodoro() {
             onClose={() => setShowSettings(false)} 
           />
         )}
+
+        {showTaskCompleteModal && (
+          <TaskCompleteModal 
+            taskTitle={tasks.find(t => t.id === selectedTaskId)?.title}
+            onComplete={() => {
+              toggleTask(selectedTaskId, false);
+              setSelectedTaskId(''); // Reset choice since it's done
+              setShowTaskCompleteModal(false);
+            }}
+            onSkip={() => setShowTaskCompleteModal(false)}
+          />
+        )}
         
         <div className="relative z-10 w-full max-w-3xl flex flex-col items-center">
           
+          {/* Task Selector */}
+          <div className="mb-8 w-full max-w-sm transition-opacity duration-500">
+            <select 
+              value={selectedTaskId}
+              onChange={(e) => setSelectedTaskId(e.target.value)}
+              disabled={isRunning}
+              className="w-full bg-[#1a1a1a]/80 backdrop-blur-sm border border-white/10 text-[#f5f5f5] rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-white/20 font-medium disabled:opacity-50 appearance-none text-center cursor-pointer disabled:cursor-not-allowed shadow-lg"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23888'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundPosition: 'right 1rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.2em' }}
+            >
+              <option value="">🎯 Foco livre (Nenhuma tarefa)</option>
+              {pendingTasks.map(t => (
+                <option key={t.id} value={t.id}>{t.title}</option>
+              ))}
+            </select>
+          </div>
+
           <div className="flex items-center gap-2 mb-16 bg-[#1a1a1a]/80 backdrop-blur-sm p-1.5 rounded-xl border border-white/10 shadow-lg">
             <button 
               onClick={() => switchMode('focus')}

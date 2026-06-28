@@ -1,78 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { LayoutDashboard } from '../components/LayoutDashboard';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase';
+import { useTasks } from '../context/TasksContext';
 import { CheckSquare, Circle, Trash2, Plus, ListTodo } from 'lucide-react';
 
 export function Tasks() {
-  const { user } = useAuth();
-  const [tasks, setTasks] = useState([]);
+  const { tasks, loading, addTask, toggleTask, deleteTask } = useTasks();
   const [newTask, setNewTask] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (user) {
-      fetchTasks();
-    }
-  }, [user]);
-
-  const fetchTasks = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (data) {
-      setTasks(data);
-    }
-    setLoading(false);
-  };
 
   const handleAddTask = async (e) => {
     e.preventDefault();
-    if (!newTask.trim() || !user) return;
+    if (!newTask.trim()) return;
 
     const taskTitle = newTask.trim();
     setNewTask('');
 
-    const { data, error } = await supabase
-      .from('tasks')
-      .insert([{ user_id: user.id, title: taskTitle }])
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Erro no Supabase:", error);
-      alert("Erro ao salvar: " + error.message);
+    const added = await addTask(taskTitle);
+    if (!added) {
       setNewTask(taskTitle); // devolve o texto se falhou
     }
-
-    if (data) {
-      setTasks([data, ...tasks]);
-    }
-  };
-
-  const toggleTask = async (id, currentStatus) => {
-    // Optimistic update
-    setTasks(tasks.map(t => t.id === id ? { ...t, completed: !currentStatus } : t));
-    
-    await supabase
-      .from('tasks')
-      .update({ completed: !currentStatus })
-      .eq('id', id);
-  };
-
-  const deleteTask = async (id) => {
-    // Optimistic update
-    setTasks(tasks.filter(t => t.id !== id));
-    
-    await supabase
-      .from('tasks')
-      .delete()
-      .eq('id', id);
   };
 
   const pendingCount = tasks.filter(t => !t.completed).length;

@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext'
 import { DeckProvider } from './context/DeckContext'
 import { UserProvider } from './context/UserContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { TasksProvider } from './context/TasksContext'
 import './index.css'
 import App from './App.jsx'
 
@@ -14,9 +15,11 @@ createRoot(document.getElementById('root')).render(
       <ThemeProvider>
         <AuthProvider>
           <UserProvider>
-            <DeckProvider>
-              <App />
-            </DeckProvider>
+            <TasksProvider>
+              <DeckProvider>
+                <App />
+              </DeckProvider>
+            </TasksProvider>
           </UserProvider>
         </AuthProvider>
       </ThemeProvider>
